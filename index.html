@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta property="og:title" content="acropalypse"/>
+        <meta property="og:type" content="website"/>
+        <meta name="theme-color" content="#36393f">
+        <meta name="viewport" content="initial-scale=0.5, maximum-scale=0.5, user-scalable=no"/>
+        <title>acropalypse</title>
+        <style>
+            @font-face {
+                font-family: "Noto Sans Bold";
+                src: url(NotoSans-Bold.ttf);
+            }
+
+            body {
+                margin: 0;
+                background-color: #36393f;
+                color: white;
+                font-family: "Noto Sans Bold";
+                text-shadow: 2px 2px 4px black;
+            }
+
+            canvas {
+                filter: blur(2px);
+            }
+
+            h2 {
+                opacity: 0;
+                animation: fadeIn 2.5s 1s forwards;
+            }
+
+            .container {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .container canvas, .overlay {
+                position: absolute;
+            }
+
+
+            .logo {
+                font-family: "Noto Sans Bold";
+                color: #f55;
+                font-size: 80pt;
+                animation: intro 2s forwards;
+            }
+
+            .logo-crop {
+                color: white;
+                background-color: rgba(255,255,255,0.2);
+                position: relative;
+                padding-bottom: 0.2em;
+            }
+
+            .logo-crop::before, .logo-crop::after {
+                position: absolute;
+                width: 0.2em;
+                height: 0.2em;
+                border-style: solid;
+                border-color: white;
+                content: ' ';
+            }
+
+            .logo-crop::before {
+                top: -0.5em;
+                left: -0.5em;
+                animation: crop1 2s 0.2s forwards;
+                border-width: 0.2em 0 0 0.2em;
+            }
+
+            .logo-crop::after {
+                right: -0.5em;
+                bottom: -0.5em;
+                animation: crop2 2s 0.2s forwards;
+                border-width: 0 0.2em 0.2em 0;
+            }
+
+            @keyframes crop1 {
+                from {
+                    top: -0.5em;
+                    left: -0.5em;
+                }
+
+                to {
+                    top: -0.1em;
+                    left: -0.1em;
+                }
+            }
+
+            @keyframes crop2 {
+                from {
+                    right: -0.5em;
+                    bottom: -0.5em;
+                }
+
+                to {
+                    right: -0.1em;
+                    bottom: -0.1em;
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes intro {
+                from {
+                    opacity: 0;
+                    margin-top: 400px;
+                }
+
+                to {
+                    opacity: 1;
+                    margin-top: 200px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <canvas id="bg"></canvas>
+            <div class="overlay">
+                <h1 class="logo">a<span class="logo-crop">crop</span>alypse</h1>
+                <h2>Coming soon...</h2>
+            </div>
+        </div>
+        <script type="module">
+            import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+
+            // Number of crop objects to generate
+            const NUM_OBJECTS = 100;
+
+            // Global array of crop objects
+            const cropObjects = [];
+
+            function createCropObject()
+            {
+                // Create segments of crop icon
+                const geoseg1  = new THREE.BoxGeometry(1, 2, 1);
+                const geoseg2  = new THREE.BoxGeometry(1, 1, 1);
+                const material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+                const cropseg1 = new THREE.Mesh(geoseg1, material);
+                const cropseg2 = new THREE.Mesh(geoseg2, material);
+
+                // Move second segment to correct position
+                cropseg2.translateX(1);
+                cropseg2.translateY(0.5);
+
+                // Create group
+                const group = new THREE.Group();
+
+                // Add segments
+                group.add(cropseg1);
+                group.add(cropseg2);
+
+                return group;
+            }
+
+            // Get canvas element
+            const bgcanvas = document.getElementById("bg");
+
+            // Create scene and renderer
+            const scene    = new THREE.Scene();
+            const camera   = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+            const renderer = new THREE.WebGLRenderer({ canvas: bgcanvas });
+
+            // Set renderer size
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Set background colour
+            scene.background = new THREE.Color(0x36393f);
+
+            // Position camera
+            camera.position.z = 40;
+
+            for (let i = 0; i < NUM_OBJECTS; i++)
+            {
+                // Create object
+                cropObjects[i] = createCropObject();
+
+                // Position object
+                cropObjects[i].position.x = (i - (NUM_OBJECTS / 2)) * 2;
+                cropObjects[i].position.y = (Math.random() * 64) - 32;
+
+                // Add object to scene
+                scene.add(cropObjects[i]);
+            }
+
+            // Add ambient lighting
+            const light = new THREE.AmbientLight();
+            scene.add(light);
+
+            function runAnimation()
+            {
+                // Runs this function in a loop
+                requestAnimationFrame(runAnimation);
+
+                for (let i = 0; i < NUM_OBJECTS; i++)
+                {
+                    // Alternate rotation direction per object
+                    if ((i % 2) == 0)
+                    {
+                        cropObjects[i].rotation.x += Math.random() % 0.02;
+                        cropObjects[i].rotation.y += Math.random() % 0.02;
+                        cropObjects[i].rotation.z += Math.random() % 0.02;
+                    }
+                    else
+                    {
+                        cropObjects[i].rotation.x -= Math.random() % 0.02;
+                        cropObjects[i].rotation.y -= Math.random() % 0.02;
+                        cropObjects[i].rotation.z -= Math.random() % 0.02;
+                    }
+
+                    // Move object up a random amount
+                    cropObjects[i].position.y += Math.random() % 0.05;
+
+                    // Make object appear from other end if beyond bounds
+                    if (cropObjects[i].position.y > 32)
+                        cropObjects[i].position.y = -32;
+                }
+
+                // Render scene
+                renderer.render(scene, camera);
+            }
+
+            // Start animation loop
+            runAnimation();
+        </script>
+    </body>
+</html>
