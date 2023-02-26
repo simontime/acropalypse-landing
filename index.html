@@ -221,11 +221,11 @@
                     }
 
                     // Move object up a random amount
-                    cropObjects[i].position.y += Math.random() % 0.05;
+                    cropObjects[i].position.y -= Math.random() % 0.05;
 
                     // Make object appear from other end if beyond bounds
-                    if (cropObjects[i].position.y > 32)
-                        cropObjects[i].position.y = -32;
+                    if (cropObjects[i].position.y < -32)
+                        cropObjects[i].position.y = 32;
                 }
 
                 // Render scene
